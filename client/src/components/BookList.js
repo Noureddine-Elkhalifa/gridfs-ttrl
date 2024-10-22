@@ -17,6 +17,7 @@ export default function BookList()
         //  dispatch(fetchBooks());
         //  console.log(response.data.message)
         dispatch(deleteBook(book._id))
+       
     
     }
 
@@ -34,7 +35,7 @@ export default function BookList()
   ) : (
     books.books.map((x) => (
       <div className="book-item" key={x._id}>
-        {x.file.map(img => <img key={img.fileID} src={img.src} alt={`${img} cover`} width={"100px"} /> )}
+        { x.file[0] && <img key={x.file[0].fileID} src={x.file[0].src} alt={`${x.file[0].src} cover`} width={"100px"} />}
         <p>Author: {x.author}</p>
         <p>Genre: {x.genre}</p>
         <Link to={`/editBook/${x._id}`}>Edit</Link>

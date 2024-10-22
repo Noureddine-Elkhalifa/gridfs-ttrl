@@ -118,7 +118,7 @@ export const editBook = async (req,res) => {
                             title,
                             author,
                             genre,
-                            coverImages: NewCoverImages.length === 0? NewCoverImages: [...currBook.coverImages,...NewCoverImages]
+                            coverImages: NewCoverImages.length === 0? currBook.coverImages: [...currBook.coverImages,...NewCoverImages]
                         },{new:true})
             
                         res.status(200).json(updatedBook);
@@ -146,6 +146,7 @@ export const deleteCover = async (req,res) => {
         );
 
         console.log("Updated book: ",updatedBook);
+        res.status(200).json(updatedBook);
         
     } catch (error) {
         console.log(error)
@@ -163,26 +164,28 @@ export const deleteBook = async (req, res) => {
         if (!book) throw new Error("Book not found");
 
         // Deleting the book document
-        await Book.deleteOne({ _id: bookId }, { session });
+        try {
+           
+            for (const cover of book.coverImages)
+                {
+                    await gridBucket.delete(cover);
+                    console.log("Book cover id",cover)
+                }
+            console.log("Cover is deleted");
+        } catch (error) {
+            console.log("Error while deleting covers",error)
+        }
+       
         console.log("Book is deleted");
 
-        // Delete the GridFS file
-        await gridBucket.delete(book.coverImage, { session });
-        console.log("Cover is deleted");
-
-       
-
-        // If no error, commit the transaction
-        await session.commitTransaction();
-        res.status(200).send({ message: 'Book deleted successfully' });
+        const deletedREsult = await Book.findByIdAndDelete(bookId);
+        console.log(deletedREsult);
+        
+        
+         res.status(200).send({ message: 'Book deleted successfully' });
 
     } catch (error) {
-        // If there's an error, abort the transaction
-        await session.abortTransaction();
-        console.error(`Transaction failed: ${error}`);
         res.status(500).send({ error: 'Failed to delete book' });
 
-    } finally {
-        session.endSession();
-    }
+}
 }
