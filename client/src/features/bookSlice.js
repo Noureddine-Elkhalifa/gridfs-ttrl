@@ -54,6 +54,11 @@ export const updateBookById = createAsyncThunk("book/updateBookById",async (form
             'Content-Type':'multipart/form-data'
         }
     })
+    const editedBook = res.data;
+    const reCover = await CoverFetcher(editedBook);
+    
+    return {...editedBook,files:reCover};
+
 })
 
 
@@ -105,6 +110,10 @@ export const bookSlice = createSlice({
                 state.loading = false;
                 state.bookById = {};
                 state.error = action.error.message
+            })
+
+            .addCase(updateBookById.fulfilled,(state,action)=>{
+                state.bookById = action.payload
             })
             ;
     },

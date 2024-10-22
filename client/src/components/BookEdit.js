@@ -8,7 +8,7 @@ export default function EditBook()
     const bookID = useParams().id ;
     const bookById = useSelector(state=> state.book.bookById);
     const loading = useSelector(state=> state.book.loading);
-    const [book,setBook] = useState({});
+    const [book,setBook] = useState({title:"",author:"",genre:""});
     const [coverImage,setCoverImage] = useState([]);
    
 
@@ -57,7 +57,8 @@ export default function EditBook()
       coverImage.forEach(file => formData.append('coverImages',file));
 
       try {
-        dispatch(updateBookById(formData));
+        dispatch(updateBookById(formData))
+        .then(result => setBook(result.payload));
       } catch (error) {
         console.log('Error editing the book')
       }
@@ -98,7 +99,7 @@ export default function EditBook()
         </tr>
       </thead>
       <tbody>
-      {book.files && book.files.map(img => <tr>
+      {book.files && book.files.map(img => <tr key={img.fileID}>
         <td><img src={img.src} alt={`${img.src} cover`} width={"100px"} /></td>
         <td>
           <button onClick={()=>handleCoverDeletion(img.fileID,bookID)}>Delete Cover</button>

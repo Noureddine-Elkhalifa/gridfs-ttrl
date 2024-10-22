@@ -11,14 +11,7 @@ export default function BookList()
 
     const handleDelete = async (book)=>
     {
-        //  const bookId = book._id;
-        //  const coverId = book.coverImage;
-        //  const response = await axios.delete(`http://localhost:5000/api/books/${bookId}/${coverId}`);
-        //  dispatch(fetchBooks());
-        //  console.log(response.data.message)
         dispatch(deleteBook(book._id))
-       
-    
     }
 
 
