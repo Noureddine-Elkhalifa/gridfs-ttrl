@@ -1,43 +1,46 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { fetchBookByID, fetchBooks } from "../features/bookSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { deleteBookCover, fetchBookByID, updateBookById } from "../features/bookSlice";
 import axios from "axios";
 export default function EditBook()
 {
-    const bookID = useParams().id;
+    const bookID = useParams().id ;
     const bookById = useSelector(state=> state.book.bookById);
+    const loading = useSelector(state=> state.book.loading);
     const [book,setBook] = useState({});
     const [coverImage,setCoverImage] = useState([]);
-
-    const [filesArray,setFilesArray] = useState([]);
+   
 
     const [displayCovesList,setDisplayCoverList] = useState(false);
 
     const dispatch = useDispatch();
     
-
+ 
     useEffect(()=>
     {
       dispatch(fetchBookByID(bookID))
+      .then(result => {
+        setBook(result.payload)
+        
+      })
     },[bookID,dispatch])
 
-    useEffect(()=>{
-      setBook(bookById)
-      setFilesArray(bookById.files);
-      console.log(bookById)
-    },[bookById])
-
+  
     
 
     
     const handleFileChange = (e) => {
         const covers= Array.from(e.target.files);
-     
         setCoverImage(covers);
       };
 
-  
+    const handleCoverDeletion = (cover,book)=>{
+      if(window.confirm("Are you sure you wanna delete this cover ?")){
+        dispatch(deleteBookCover({cover,book}))
+      }
+      
+    }
    
     
     
@@ -47,17 +50,14 @@ export default function EditBook()
       e.preventDefault();
       const formData = new FormData();
 
+      formData.append("_id",bookID)
       formData.append("title",book.title);
       formData.append("author",book.author);
       formData.append("genre",book.genre);
       coverImage.forEach(file => formData.append('coverImages',file));
 
       try {
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-        }
-
-        const res = await axios.put(`http://localhost:5000/api/books/${book._id}`,formData)
+        dispatch(updateBookById(formData));
       } catch (error) {
         console.log('Error editing the book')
       }
@@ -66,9 +66,9 @@ export default function EditBook()
 
     
 
-    return  <> <div>
+    return  <> {loading? "Loading... ": <div>
      <form onSubmit={handleSubmit} content="multipart/form-data" >
-     {/* {book.files.map(img => <img src={img} alt={`${img} cover`} /> )}  */}
+     
 
     <label>
         Title:
@@ -88,12 +88,25 @@ export default function EditBook()
       </label>
       <button type="submit">Add Book</button>
     </form> 
-
-    <div>
-
-    
-    </div>
     
 
-    </div></>
+    <table>
+      <thead>
+        <tr>
+          <th>Cover</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {book.files && book.files.map(img => <tr>
+        <td><img src={img.src} alt={`${img.src} cover`} width={"100px"} /></td>
+        <td>
+          <button onClick={()=>handleCoverDeletion(img.fileID,bookID)}>Delete Cover</button>
+        </td>
+      </tr> )} 
+      </tbody>
+    </table>  
+    
+
+    </div>}</>
 }

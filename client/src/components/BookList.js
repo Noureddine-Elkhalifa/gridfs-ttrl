@@ -2,12 +2,12 @@ import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
 import { deleteBook,fetchBooks } from "../features/bookSlice";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 export default function BookList()
 {
     const books = useSelector(state=>state.book)
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+
 
     const handleDelete = async (book)=>
     {
@@ -34,10 +34,11 @@ export default function BookList()
   ) : (
     books.books.map((x) => (
       <div className="book-item" key={x._id}>
-        {x.file.map(img => <img key={img} src={img} alt={`${img} cover`} /> )}
+        {x.file.map(img => <img key={img.fileID} src={img.src} alt={`${img} cover`} width={"100px"} /> )}
         <p>Author: {x.author}</p>
         <p>Genre: {x.genre}</p>
-        <button onClick={()=>navigate(`/editBook/${x._id}`)}>Edit</button>
+        <Link to={`/editBook/${x._id}`}>Edit</Link>
+        {/* <a href={`/editBook/${x._id}`}>Edit</a> */}
         <button onClick={()=>handleDelete(x)}>Delete</button>
       </div>
     ))

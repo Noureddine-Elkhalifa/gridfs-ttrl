@@ -103,38 +103,53 @@ export const getBookByID = async(req,res) =>{
 export const editBook = async (req,res) => {
     const {title,author,genre} = req.body;
     const booksId = req.params.id;
-
+ 
     //extracting the id of all the covers
     const NewCoverImages = req.files.map(file => file.id); 
    
     const currBook = await Book.findById(booksId);
-   console.log(currBook.coverImages);
+   console.log("NEW FILES",NewCoverImages);
 
-   if(NewCoverImages.length === 0)
-        {console.log("Old Covers")
-        console.log(currBook.coverImages);}
-    else
-        {
-            for(const coverImage of currBook.coverImages){
-                await gridBucket.delete(coverImage);
-                console.log("deleted file: " ,coverImage);
-            }
+
+
+        try {
+
+            const updatedBook = await Book.findByIdAndUpdate(req.params.id, {
+                            title,
+                            author,
+                            genre,
+                            coverImages: NewCoverImages.length === 0? NewCoverImages: [...currBook.coverImages,...NewCoverImages]
+                        },{new:true})
             
+                        res.status(200).json(updatedBook);
+            console.log(NewCoverImages)
+        } catch (error) {
+                console.error(error)
+                res.status(500).send({message:"Error updating the book"})
         }
-   
+}
+
+export const deleteCover = async (req,res) => {
+    const coverId = new ObjectId(req.body.cover);
+    const bookId = req.body.book;
+    console.log(coverId);
     try {
-        const updatedBook = await Book.findByIdAndUpdate(req.params.id, {
-            title,
-            author,
-            genre,
-            coverImages: NewCoverImages.length === 0? currBook.coverImages:NewCoverImages
-        })
-        console.log("book updated")
+
+        //Delete the file
+        await gridBucket.delete(coverId);
+
+        //Remove file id from the document
+        const updatedBook = await Book.findByIdAndUpdate(
+            bookId,
+            {$pull:{coverImages:coverId}},
+            {new:true}
+        );
+
+        console.log("Updated book: ",updatedBook);
         
     } catch (error) {
-        console.error(error)
+        console.log(error)
     }
-
 }
 
 export const deleteBook = async (req, res) => {
@@ -155,7 +170,6 @@ export const deleteBook = async (req, res) => {
         await gridBucket.delete(book.coverImage, { session });
         console.log("Cover is deleted");
 
-        // Simulate a server crash after the deletion
        
 
         // If no error, commit the transaction

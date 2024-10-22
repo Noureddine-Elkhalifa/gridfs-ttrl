@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import EditBook from "../components/BookEdit";
+import { CoverFetcher } from "./functions/CoverFetcher";
 
 const initialState = {
     loading: false,
@@ -15,14 +17,10 @@ export const fetchBooks = createAsyncThunk("book/fetchBooks", async () => {
     
 
     try {
-
         const BooksWithCover =await Promise.all(books.map( async(book)=>
         {
-            
-            const bc = await Promise.all( book.coverImages.map(async(coverID)=>{
-               const response = await axios.get(`http://localhost:5000/api/books/cover/${coverID}`,{responseType:'blob'});
-                return URL.createObjectURL(response.data);
-            }))
+            const bc = await CoverFetcher(book);
+            console.log(bc)
             return {...book,file:bc}
         }))
        return BooksWithCover
@@ -45,22 +43,39 @@ export const deleteBook = createAsyncThunk("book/deleteBook",async (bookId)=>{
 export const fetchBookByID = createAsyncThunk(`book/getBookById`,async (bookId)=>{
     const response = await axios.get(`http://localhost:5000/api/books/${bookId}`);
     let book = response.data;
-
-    const bookCovers = await Promise.all(book.coverImages.map(async x => {
-        const response = await axios.get(`http://localhost:5000/api/books/cover/${x}`,{responseType:'blob'});
-        return {src:URL.createObjectURL(response.data),fileID:x}; 
-    }))
-    book = {...book,files:bookCovers};
-   
-    return {...book,files:bookCovers};
+    return {...book,files:await CoverFetcher(book)};
   
 })
+
+export const updateBookById = createAsyncThunk("book/updateBookById",async (formData)=>
+{
+    const res = await axios.put(`http://localhost:5000/api/books/${formData.get("_id")}`,formData,{
+        headers:{
+            'Content-Type':'multipart/form-data'
+        }
+    })
+})
+
+
+export const deleteBookCover = createAsyncThunk("book/deleteBookCover",async (data)=>{
+    console.log(data);
+   try {
+    const res = await axios.delete(`http://localhost:5000/api/cover/`,{data})
+    console.log(res);
+   } catch (error) {
+    console.error("Error deleting cover: ",error);
+   }
+})
+
 
 export const bookSlice = createSlice({
     name: "book",
     initialState,
+    reducers:{
+    },
     extraReducers: (builder) => {
         builder
+        //FETCH ALL THE BOOKS
             .addCase(fetchBooks.pending, (state) => {
                 state.loading = true;
             })
@@ -74,8 +89,11 @@ export const bookSlice = createSlice({
                 state.books = [];
                 state.error = action.error.message;
             })
+            // DELETE BOOK BY ID
             .addCase(deleteBook.fulfilled,(state,action)=> {console.log(action.payload)})
             .addCase(deleteBook.rejected,(state,action)=>{console.log(action.payload)})
+
+            // FETCH BOOK BY ID
             .addCase(fetchBookByID.pending,(state)=>{state.loading=true})
             .addCase(fetchBookByID.fulfilled,(state,action)=>{
                 state.loading = false;
