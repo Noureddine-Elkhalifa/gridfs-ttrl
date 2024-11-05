@@ -2,26 +2,32 @@ import Book from '../Models/Book.js';
 import { gridBucket } from '../util/grid.js';
 import mongoose, { Types } from 'mongoose';
 import { dbConnection } from '../util/grid.js';
-import { ObjectId } from 'mongodb';
+import { GridFSBucket, ObjectId } from 'mongodb';
 
 export const addBook = async (req, res) => {
     const { title, author, genre } = req.body;
-    
+    const files = req.files;
+   
+
+
     // Check if a file was uploaded
     if (!req.files) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     // Access the file ID correctly
-    const coverImages = req.files.map(file => file.id); 
+    const coverImages = req.files.covers.map(file => file.id);
+    const theBook = files.theBook[0].id
     console.log(coverImages);
+    console.log('theBookId', theBook)
 
     // Create a new book instance
     const newBook = new Book({
         title,
         author,
         genre,
-        coverImages
+        coverImages,
+        theBook
     });
 
     // Save the new book
@@ -42,55 +48,57 @@ export const getBooks = async (req, res) => {
     }
 };
 
-
+//Function to retrieve files from the db
 export const getBookCover = async (req,res) => {
 
-        let fileId;    
+        let fileId;
 
         // Convert id into ObjectId readable by mongodb
         try{
-             fileId = new ObjectId(req.params.fileId); 
+             fileId = new ObjectId(req.params.fileId);
         }
         catch(error){
             console.error("invalid file ID format ", error);
         }
 
         try{
+
+            //This part is to test the existance of requested cover
             const cover = await gridBucket.find({_id:fileId}).toArray();
             if(!cover || cover.length === 0){
-                return res.status(404).send({message:'Cover not found'});
+                return res.status(404).send({message:'File not found'});
             }
-
+            
             const downloadStream = gridBucket.openDownloadStream(fileId);
             res.setHeader('Content-Type', cover[0].contentType);
- 
-            downloadStream.pipe(res); 
+
+            downloadStream.pipe(res);
 
             downloadStream.on('error', (error) => {
                 console.error('Error streaming image:', error);
                 res.status(500).send({ message: 'Error streaming file' });
             });
-    
+
             downloadStream.on('end', () => {
                 console.log('File streaming completed successfully.');
             });
-    
+
         }
         catch(error){
-            console.error('Error fetching cover:', error);
-            res.status(500).send({ message: 'Error fetching cover' });
+            console.error('Error fetching file:', error);
+            res.status(500).send({ message: 'Error fetching file' });
         }
 }
 
 export const getBookByID = async(req,res) =>{
-    
+
 
     try{
         const bookId =  req.params.bookId;
         const book = await Book.findById(bookId)
 
         if(!book) return res.status(500).send({message:"No book was found with given ID"});
-        
+
         return res.status(200).json(book);
 
     }
@@ -103,10 +111,10 @@ export const getBookByID = async(req,res) =>{
 export const editBook = async (req,res) => {
     const {title,author,genre} = req.body;
     const booksId = req.params.id;
- 
+
     //extracting the id of all the covers
-    const NewCoverImages = req.files.map(file => file.id); 
-   
+    const NewCoverImages = req.files.map(file => file.id);
+
     const currBook = await Book.findById(booksId);
    console.log("NEW FILES",NewCoverImages);
 
@@ -120,7 +128,7 @@ export const editBook = async (req,res) => {
                             genre,
                             coverImages: NewCoverImages.length === 0? currBook.coverImages: [...currBook.coverImages,...NewCoverImages]
                         },{new:true})
-            
+
                         res.status(200).json(updatedBook);
             console.log(NewCoverImages)
         } catch (error) {
@@ -147,7 +155,7 @@ export const deleteCover = async (req,res) => {
 
         console.log("Updated book: ",updatedBook);
         res.status(200).json(updatedBook);
-        
+
     } catch (error) {
         console.log(error)
     }
@@ -161,28 +169,38 @@ export const deleteBook = async (req, res) => {
         const bookId = new ObjectId(req.params.bookId);
         const book = await Book.findById(bookId).session(session);
 
-        if (!book) throw new Error("Book not found");
+        if (!book) return res.state(500).send({error:"Failed to find the book"})
+
+          
 
         // Deleting the book document
         try {
-           
+
             for (const cover of book.coverImages)
                 {
                     await gridBucket.delete(cover);
                     console.log("Book cover id",cover)
                 }
             console.log("Cover is deleted");
+           
         } catch (error) {
             console.log("Error while deleting covers",error)
         }
-       
+
+        try {
+            await gridBucket.delete(book.theBook);
+            console.log("theBook pdf has been deleted")
+        } catch (error) {
+            console.error(error);
+        }
+
         console.log("Book is deleted");
 
         const deletedREsult = await Book.findByIdAndDelete(bookId);
-        console.log(deletedREsult);
-        
-        
-         res.status(200).send({ message: 'Book deleted successfully' });
+      
+
+
+        res.status(200).json({ message: 'Book deleted successfully' ,deletedBookId:deletedREsult._id});
 
     } catch (error) {
         res.status(500).send({ error: 'Failed to delete book' });

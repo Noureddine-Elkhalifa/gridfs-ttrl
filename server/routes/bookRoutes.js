@@ -5,7 +5,10 @@ import { upload } from '../util/grid.js';
 const router = express.Router();
 
 router.get('/books', getBooks);
-router.post('/books',upload.array('coverImages'),addBook);
+router.post('/books',upload.fields([
+    {name:'theBook',maxCount:1},
+    {name:'covers',maxCount:5}
+]),addBook);
 router.get('/books/cover/:fileId',getBookCover)
 router.get('/books/:bookId',getBookByID)
 router.put('/books/:id',upload.array("coverImages"),editBook);

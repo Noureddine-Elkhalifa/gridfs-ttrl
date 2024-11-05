@@ -17,7 +17,11 @@ const bookSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         // required:true,
         ref:'upload.files'
-    }]
+    }],
+    theBook:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'upload.files'
+    }
 })
 
 const Book = mongoose.model('Book', bookSchema);
