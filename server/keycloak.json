@@ -1,0 +1,7 @@
+{
+  "realm": "bookRealm",
+  "bearer-only": true,
+  "auth-server-url": "http://localhost:5005",
+  "ssl-required": "external",
+  "resource": "backEndBook"
+}

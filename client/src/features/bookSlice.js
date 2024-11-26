@@ -8,6 +8,10 @@ const initialState = {
     books: [],
     error: '',
     bookById:{},
+    user:{
+        connected:false,
+        token:''
+    }
 };
 
 // Asynchronous action to fetch books
@@ -68,9 +72,22 @@ export const updateBookById = createAsyncThunk("book/updateBookById",async (form
         }
     })
     const editedBook = res.data;
+    console.log(editedBook);
     const reCover = await fileFetcher(editedBook);
-    
-    return {...editedBook,covers:reCover};
+
+     //Fetching the PDF                                                                          //Response type must be blob 
+     const pdfFetching = await axios.get(`http://localhost:5000/api/books/cover/${editedBook.theBook}`,{responseType:'blob'});
+     const theBook = URL.createObjectURL(pdfFetching.data)
+
+
+    const bookToSend = {
+        title:editedBook.title,
+        author:editedBook.author,
+        genre:editedBook.genre,
+        covers:reCover,
+        theBook
+    }
+    return bookToSend;
 
 })
 
@@ -89,8 +106,7 @@ export const deleteBookCover = createAsyncThunk("book/deleteBookCover",async (da
 export const bookSlice = createSlice({
     name: "book",
     initialState,
-    reducers:{
-    },
+    reducers:{},
     extraReducers: (builder) => {
         builder
         //FETCH ALL THE BOOKS

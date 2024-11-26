@@ -1,23 +1,17 @@
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { deleteBook, fetchBooks } from "../features/bookSlice";
+import { fetchBooks } from "../../features/bookSlice";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import './BookList.css';
-import keycloak from "../keycloak";
-export default function BookList() {
- 
+import '../BookList.css';
+export default function VisitorBookList() {
   const books = useSelector((state) => state.book);
   const dispatch = useDispatch();
   const location = useLocation();
   const [message, setMessage] = useState(location.state?.message || "");
  
 
-  const handleDelete = async (book) => {
-    dispatch(deleteBook(book._id)).then((result) => {
-      setMessage(result.payload.message);
-    });
-  };
+  
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -49,10 +43,7 @@ export default function BookList() {
                <p className="book-title">Title: {x.title}</p>
                 <p className="book-author">Author: {x.author}</p>
                 <p className="book-genre">Genre: {x.genre}</p>
-                <div className="book-actions">
-                  <Link to={`/editBook/${x._id}`} className="edit-link">Edit</Link>
-                  <button onClick={() => handleDelete(x)} className="delete-button">Delete</button>
-                </div>
+                <button>Details</button>
               </div>
             </div>
           ))

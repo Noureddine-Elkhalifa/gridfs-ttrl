@@ -28,18 +28,16 @@ export default function AddBook() {
     }, [theBook]);
 
     const onSubmit =  async (data) => {
-        
+
       const formData = new FormData();
       formData.append("title",data.title);
       formData.append("author",data.author);
       formData.append("genre",data.genre);
-
       formData.append("theBook",data.theBook);
-
       data.covers.forEach(cover => {
         formData.append("covers",cover)
       });
-      
+
 
         try {
           const res = await axios.post('http://localhost:5000/api/books', formData,
@@ -51,7 +49,7 @@ export default function AddBook() {
           navigate("/",{state:{message:res.data.message}})
         } catch (error) {
             console.log("Error adding the book")
-            console.log(error); 
+            console.log(error);
         }
     };
 
@@ -115,7 +113,7 @@ export default function AddBook() {
                 </div>
                 <button type="submit" className="submit-button">Add Book</button>
             </form>
-            <DevTool control={control} />
+            {/* <DevTool control={control} /> */}
             <div className="covers-display">
                 {coversDisplay && coversDisplay.map(x => (
                     <img src={x} alt="" key={x} className="cover-image" />

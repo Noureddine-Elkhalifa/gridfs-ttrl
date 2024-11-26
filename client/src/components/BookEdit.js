@@ -13,10 +13,6 @@ export default function EditBook()
     const [book,setBook] = useState(bookById);
     const [coverImage,setCoverImage] = useState([]);
     const [theBook,setTheBook] = useState(book?.theBook);
-   
-
-
-
     const dispatch = useDispatch();
     
     useEffect(()=>
@@ -24,23 +20,21 @@ export default function EditBook()
       dispatch(fetchBookByID(bookID))
     },[bookID,dispatch])
 
-  
-    
-
+    useEffect(() => {
+      if (bookById) {
+          setBook(bookById);
+      }
+  }, [bookById]);
     
     const handleFileChange = (e) => {
         const covers= Array.from(e.target.files);
         setCoverImage(covers);
       };
 
-   
-    
     const checkState = ()=>{
       console.log(book);
     }
     
-    
-   
     const handleSubmit = async(e)=>
     {
       e.preventDefault();
@@ -51,15 +45,14 @@ export default function EditBook()
       formData.append("author",book.author);
       formData.append("genre",book.genre);
       coverImage.forEach(file => formData.append('coverImages',file));
-      console.log(bookz)
+      console.log("Submited book")
+      console.log(book)
 
-      // try {
-      //   dispatch(updateBookById(formData))
-      //   .then(result =>  console.log(result))
-  
-      // } catch (error) {
-      //   console.log('Error editing the book')
-      // }
+      try {
+        dispatch(updateBookById(formData))
+      } catch (error) {
+        console.log('Error editing the book')
+      }
 
     }
 
@@ -79,7 +72,11 @@ export default function EditBook()
       </label>
       <label>
         Genre:
-        <input type="text"   defaultValue={bookById?.genre} onChange={(e) =>setBook({...book,genre:e.target.value})}  />
+        <select name="" id=""  defaultValue={bookById?.genre} onChange={(e) =>setBook({...book,genre:e.target.value}) }>
+          <option value="fantasy">Fantasy</option>
+          <option value="drama">Drama</option>
+          <option value="comedy">Comedy</option>
+        </select>
       </label>
       <label>
         Cover Image:

@@ -42,6 +42,7 @@ export const addBook = async (req, res) => {
 export const getBooks = async (req, res) => {
     try {
         const books = await Book.find({});
+        
         res.status(200).json(books);
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while fetching data' });
@@ -95,8 +96,7 @@ export const getBookByID = async(req,res) =>{
 
     try{
         const bookId =  req.params.bookId;
-        const book = await Book.findById(bookId)
-
+        const book = await Book.findById(bookId);
         if(!book) return res.status(500).send({message:"No book was found with given ID"});
 
         return res.status(200).json(book);

@@ -6,28 +6,31 @@ import BookList from './components/BookList';
 import EditBook from './components/BookEdit';
 import AddBook from './components/addBook';
 
+import VisitorBookList from './components/visitor/visitorBooksList';
+import ProtectedRoute from './config/keycloak/protectedRoute';
+
 function App() {
-
- 
-
+  const location = useLocation();
   return (<>
   <nav>
     <li><Link to="/">Books List</Link></li>
-    {/* <li><Link to="/addBook">Add New Book</Link></li> */}
-    <li><Link to="/add"> Add book</Link></li>
+
   </nav>
-  <Routes>
+  <Routes location={location} >
+    <Route element={<ProtectedRoute/>}>
       <Route path='/' element={<BookList/>}></Route>
       <Route path='/addBook' element={<BookForm/>}></Route>
       <Route path='/editBook/:id' element={<EditBook/>}></Route>
       <Route path='/add' element={<AddBook/>}></Route>
+    </Route>
+     
+
+      <Route path='/books' element={<VisitorBookList/>}></Route>
   </Routes>
   
-  </>
+</>);
 
-   
-   
-  );
+
 }
 
 export default App;
