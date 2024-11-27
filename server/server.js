@@ -5,14 +5,13 @@ import { dbConnection, upload } from './util/grid.js';  // Ensure this points to
 import bookRoutes from './routes/bookRoutes.js';
 import dotenv from 'dotenv';
 import Keycloak from "keycloak-connect";
-import { Session } from 'express-session';
+import session from 'express-session';
 const app = express();
 const PORT = 5000;
 
 
 
 const keycloak = new Keycloak({});
-
 
 dotenv.config();
 

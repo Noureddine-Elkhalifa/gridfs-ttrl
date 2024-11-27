@@ -66,28 +66,29 @@ export const fetchBookByID = createAsyncThunk(`book/getBookById`,async (bookId)=
 
 export const updateBookById = createAsyncThunk("book/updateBookById",async (formData)=>
 {
-    const res = await axios.put(`http://localhost:5000/api/books/${formData.get("_id")}`,formData,{
-        headers:{
-            'Content-Type':'multipart/form-data'
+        const res = await axios.put(`http://localhost:5000/api/books/${formData.get("_id")}`,formData,{
+            headers:{
+                'Content-Type':'multipart/form-data'
+            }
+        })
+        const editedBook = res.data;
+        console.log(editedBook);
+        const reCover = await fileFetcher(editedBook);
+    
+         //Fetching the PDF                                                                          //Response type must be blob 
+         const pdfFetching = await axios.get(`http://localhost:5000/api/books/cover/${editedBook.theBook}`,{responseType:'blob'});
+         const theBook = URL.createObjectURL(pdfFetching.data)
+    
+    
+        const bookToSend = {
+            title:editedBook.title,
+            author:editedBook.author,
+            genre:editedBook.genre,
+            covers:reCover,
+            theBook
         }
-    })
-    const editedBook = res.data;
-    console.log(editedBook);
-    const reCover = await fileFetcher(editedBook);
-
-     //Fetching the PDF                                                                          //Response type must be blob 
-     const pdfFetching = await axios.get(`http://localhost:5000/api/books/cover/${editedBook.theBook}`,{responseType:'blob'});
-     const theBook = URL.createObjectURL(pdfFetching.data)
-
-
-    const bookToSend = {
-        title:editedBook.title,
-        author:editedBook.author,
-        genre:editedBook.genre,
-        covers:reCover,
-        theBook
-    }
-    return bookToSend;
+        return bookToSend;
+   
 
 })
 
