@@ -10,7 +10,7 @@ export default function ProtectedRoute() {
         const requestInterceptor = axios.interceptors.request.use(
             (config) => {
                 // Refresh token if it's about to expire
-                keycloak.updateToken(3600).catch(() => keycloak.logout());
+                // keycloak.updateToken(3600).catch(() => keycloak.logout());
      
                 
                 if (keycloak.token) {

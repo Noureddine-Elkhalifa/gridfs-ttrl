@@ -2,7 +2,12 @@
   "realm": "bookRealm",
   "auth-server-url": "http://localhost:5005/",
   "ssl-required": "external",
-  "resource": "bookClient",
-  "public-client": true,
-  "confidential-port": 0
+  "resource": "privatBookClient",
+  "verify-token-audience": true,
+  "credentials": {
+    "secret": "1eav4Q9dYmvm8jgsyhaLVV9LRbAgGtxq"
+  },
+  "use-resource-role-mappings": true,
+  "confidential-port": 0,
+  "bearer-only":true
 }
