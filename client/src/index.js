@@ -7,8 +7,11 @@ import { Provider } from 'react-redux';
 import store from './app/store';
 import { BrowserRouter } from 'react-router-dom';
 import {ReactKeycloakProvider} from '@react-keycloak/web';
-import keycloak from './keycloak';
+import Keycloak from "keycloak-js";
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const keycloak = new Keycloak();
+
+
 root.render(
   <ReactKeycloakProvider authClient={keycloak}>
     <BrowserRouter>

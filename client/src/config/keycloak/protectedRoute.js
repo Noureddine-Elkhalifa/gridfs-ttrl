@@ -5,7 +5,6 @@ import axios from "axios";
 
 export default function ProtectedRoute() {
     const { keycloak, initialized } = useKeycloak();
-
     useEffect(() => {
         const requestInterceptor = axios.interceptors.request.use(
             (config) => {

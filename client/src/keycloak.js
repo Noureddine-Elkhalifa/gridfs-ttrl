@@ -1,10 +1,7 @@
-import Keycloak from "keycloak-js";
+//import Keycloak from "keycloak-js";
 
-const keycloak = new Keycloak({
-  "realm": "bookRealm",
-  "url": "http://localhost:5005",
-  "ssl-required": "external",
-  "clientId": "bookClient"
-});
+//const keycloak = new Keycloak();
 
-export default keycloak;
+
+
+//export default keycloak;
